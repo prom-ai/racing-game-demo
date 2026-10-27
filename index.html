@@ -3,72 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neon Racer</title>
+  <title>Turbo Circuit</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: rgba(17, 24, 39, 0.7);
-      --road: #181d2b;
-      --text: #e5e7eb;
+      --bg: #060b16;
+      --panel: rgba(15, 23, 42, 0.76);
+      --text: #e2e8f0;
+      --accent: #7dd3fc;
+      --accent-2: #38bdf8;
+      --danger: #f87171;
+      --good: #34d399;
+      --gold: #facc15;
     }
 
     * { box-sizing: border-box; }
-
+    html, body { margin: 0; height: 100%; }
     body {
-      margin: 0;
       display: grid;
       place-items: center;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #172554 0%, #0b1020 40%, #020617 100%);
+      background: radial-gradient(circle at top, #172554, #020617 55%);
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    .game-shell {
-      width: min(92vw, 900px);
+    .shell {
+      width: min(94vw, 980px);
       background: var(--panel);
-      border: 2px solid rgba(148, 163, 184, 0.3);
+      border: 2px solid rgba(148, 163, 184, 0.22);
       border-radius: 18px;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
       overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
     }
 
     .hud {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 20px;
-      background: rgba(15, 23, 42, 0.9);
-      border-bottom: 1px solid rgba(148,163,184,0.2);
-      font-weight: bold;
-      letter-spacing: 0.05em;
+      gap: 18px;
+      padding: 14px 18px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      font-size: 0.82rem;
       text-transform: uppercase;
-      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      font-weight: 700;
     }
 
-    .hud span {
-      display: inline-flex;
-      gap: 8px;
+    .hud-item {
+      display: flex;
       align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .boost-track {
+      width: 160px;
+      height: 14px;
+      background: rgba(30, 41, 59, 0.9);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .boost-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #38bdf8, #facc15, #f87171);
+      border-radius: inherit;
+      transition: width 0.08s linear;
     }
 
     canvas {
       display: block;
       width: 100%;
       height: auto;
-      background: linear-gradient(#0f172a, #111827);
+      background: linear-gradient(#020617, #111827);
     }
 
     .overlay {
       position: fixed;
       inset: 0;
       display: flex;
-      align-items: center;
       justify-content: center;
-      background: rgba(2, 6, 23, 0.75);
-      pointer-events: none;
+      align-items: center;
+      background: rgba(2, 6, 23, 0.7);
       opacity: 0;
-      transition: opacity 0.2s ease;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
     }
 
     .overlay.visible {
@@ -77,19 +98,19 @@
     }
 
     .card {
-      background: rgba(15, 23, 42, 0.94);
-      border: 2px solid rgba(96, 165, 250, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid rgba(96, 165, 250, 0.3);
       border-radius: 18px;
-      padding: 28px 32px;
+      padding: 28px 30px;
+      min-width: min(90vw, 420px);
       text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-      min-width: min(90vw, 380px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
     }
 
     .card h1 {
       margin: 0 0 12px;
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      color: #7dd3fc;
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--accent);
     }
 
     .card p {
@@ -98,40 +119,57 @@
       line-height: 1.5;
     }
 
+    .card .meta {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      flex-wrap: wrap;
+    }
+
     button {
       margin-top: 18px;
       border: none;
       border-radius: 12px;
-      padding: 12px 22px;
+      padding: 12px 24px;
       background: linear-gradient(135deg, #38bdf8, #2563eb);
       color: white;
-      font-weight: bold;
       font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: transform 0.15s ease, filter 0.15s ease;
+      transition: transform 0.12s ease, filter 0.12s ease;
     }
 
     button:hover {
       transform: translateY(-1px);
-      filter: brightness(1.05);
+      filter: brightness(1.06);
     }
   </style>
 </head>
 <body>
-  <div class="game-shell">
+  <div class="shell">
     <div class="hud">
-      <span>Score: <strong id="score">0</strong></span>
-      <span>Best: <strong id="best">0</strong></span>
-      <span>Speed: <strong id="speed">1.0x</strong></span>
+      <div class="hud-item">Lap <strong id="lapText">1 / 3</strong></div>
+      <div class="hud-item">Time <strong id="timerText">00:00</strong></div>
+      <div class="hud-item">Best <strong id="bestText">00:00</strong></div>
+      <div class="hud-item">Speed <strong id="speedText">0 km/h</strong></div>
+      <div class="hud-item">Nitro
+        <div class="boost-track"><div id="boostFill" class="boost-fill"></div></div>
+      </div>
     </div>
-    <canvas id="game" width="900" height="600"></canvas>
+    <canvas id="game" width="960" height="620"></canvas>
   </div>
 
-  <div class="overlay visible" id="overlay">
+  <div id="overlay" class="overlay visible">
     <div class="card">
-      <h1>Neon Racer</h1>
-      <p>Drive through the night traffic.</p>
-      <p>Use A/D or arrow keys to change lanes and avoid collisions.</p>
+      <h1>Turbo Circuit</h1>
+      <p>Race through 3 laps, dodge traffic, and use nitro to win.</p>
+      <div class="meta">
+        <span>Move: A / D or ← / →</span>
+        <span>Boost: Shift</span>
+      </div>
       <button id="startBtn">Start Race</button>
     </div>
   </div>
@@ -140,222 +178,276 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 
-    const scoreEl = document.getElementById('score');
-    const bestEl = document.getElementById('best');
-    const speedEl = document.getElementById('speed');
+    const lapText = document.getElementById('lapText');
+    const timerText = document.getElementById('timerText');
+    const bestText = document.getElementById('bestText');
+    const speedText = document.getElementById('speedText');
+    const boostFill = document.getElementById('boostFill');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('startBtn');
 
-    const state = {
-      running: false,
-      score: 0,
-      best: Number(localStorage.getItem('neon-racer-best') || 0),
-      speed: 1,
-      distance: 0,
-      spawnTimer: 0,
-      pickupTimer: 0,
-      roadScroll: 0,
-      roadCurve: 0,
-      roadShift: 0
+    const LAPS = 3;
+    const RACE_DISTANCE = 3200;
+    const road = {
+      horizon: 110,
+      widthTop: 170,
+      widthBottom: 560
     };
 
-    const keys = { left: false, right: false };
+    const state = {
+      running: false,
+      startTime: 0,
+      elapsed: 0,
+      bestLap: null,
+      lap: 1,
+      totalDistance: 0,
+      speed: 0,
+      maxSpeed: 320,
+      nitro: 100,
+      boostActive: false,
+      finished: false
+    };
+
+    const keys = { left: false, right: false, boost: false };
 
     const player = {
       x: canvas.width / 2,
       y: canvas.height - 115,
       width: 56,
-      height: 90,
-      color: '#38bdf8',
-      speed: 7.5,
+      height: 94,
+      targetX: canvas.width / 2,
       drift: 0,
-      heading: 0
+      color: '#38bdf8'
     };
 
-    let cars = [];
+    let enemies = [];
     let pickups = [];
+    let particles = [];
 
-    function clamp(value, min, max) {
-      return Math.min(max, Math.max(min, value));
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
     }
 
-    function laneX(lane) {
-      return canvas.width / 2 + (lane - 1.5) * 120;
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      const ms = Math.floor((seconds % 1) * 100);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
     }
 
     function roadHalfAt(y) {
-      const horizon = 145;
-      const t = clamp((y - horizon) / (canvas.height - horizon), 0, 1);
-      return 85 + t * 220;
+      const t = clamp((y - road.horizon) / (canvas.height - road.horizon), 0, 1);
+      return lerp(road.widthTop / 2, road.widthBottom / 2, t);
     }
 
-    function spawnCar() {
-      const lane = Math.floor(Math.random() * 3) + 1;
-      const x = laneX(lane);
-      const car = {
+    function roadCenterAt(y) {
+      return canvas.width / 2;
+    }
+
+    function laneXForWorld(worldX) {
+      const roadHalf = roadHalfAt(canvas.height - 80);
+      return canvas.width / 2 + worldX * roadHalf * 0.95;
+    }
+
+    function worldToScreenX(worldX, y) {
+      const roadCenter = roadCenterAt(y);
+      const half = roadHalfAt(y);
+      return roadCenter + worldX * half;
+    }
+
+    function roadPosFromX(screenX, y) {
+      const half = roadHalfAt(y);
+      return ((screenX - canvas.width / 2) / half);
+    }
+
+    function randomLane() {
+      return (Math.random() * 2 - 1) * 0.9;
+    }
+
+    function spawnEnemy() {
+      const lane = randomLane();
+      enemies.push({
         lane,
-        x,
+        x: worldToScreenX(lane, 50),
         y: -120,
-        width: 52,
-        height: 92,
+        width: 54,
+        height: 90,
         color: ['#f87171', '#f59e0b', '#a78bfa', '#34d399'][Math.floor(Math.random() * 4)],
-        speed: 4.5 + Math.random() * 2.6 + state.speed * 1.15
-      };
-      cars.push(car);
+        speed: 140 + Math.random() * 100 + state.speed * 0.45,
+        drift: (Math.random() - 0.5) * 0.25,
+        wobble: Math.random() * Math.PI * 2
+      });
     }
 
     function spawnPickup() {
-      const lane = Math.floor(Math.random() * 3) + 1;
-      const x = laneX(lane);
       pickups.push({
-        x,
+        x: canvas.width / 2 + (Math.random() * 2 - 1) * 160,
         y: -40,
         size: 18,
-        color: '#facc15',
-        spin: Math.random() * Math.PI * 2
+        spin: Math.random() * Math.PI * 2,
+        type: 'nitro'
       });
     }
 
     function updateHud() {
-      scoreEl.textContent = Math.floor(state.score);
-      bestEl.textContent = Math.floor(state.best);
-      speedEl.textContent = state.speed.toFixed(1) + 'x';
+      lapText.textContent = `${state.lap} / ${LAPS}`;
+      timerText.textContent = formatTime(state.elapsed);
+      bestText.textContent = state.bestLap === null ? '00:00' : formatTime(state.bestLap);
+      speedText.textContent = `${Math.round(state.speed * 0.72)} km/h`;
+      boostFill.style.width = `${state.nitro}%`;
     }
 
     function resetGame() {
       state.running = true;
-      state.score = 0;
-      state.distance = 0;
-      state.speed = 1;
-      state.spawnTimer = 0.2;
-      state.pickupTimer = 2.5;
-      state.roadScroll = 0;
-      state.roadCurve = 0;
-      state.roadShift = 0;
-      cars = [];
+      state.startTime = performance.now();
+      state.elapsed = 0;
+      state.totalDistance = 0;
+      state.speed = 80;
+      state.nitro = 100;
+      state.boostActive = false;
+      state.finished = false;
+      state.lap = 1;
+      enemies = [];
       pickups = [];
+      particles = [];
 
       player.x = canvas.width / 2;
-      player.y = canvas.height - 115;
+      player.targetX = canvas.width / 2;
       player.drift = 0;
-      player.heading = 0;
+
+      for (let i = 0; i < 9; i++) spawnEnemy();
+      for (let i = 0; i < 4; i++) spawnPickup();
 
       overlay.classList.remove('visible');
       updateHud();
     }
 
-    function rectsOverlap(a, b) {
-      return (
-        a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y
-      );
-    }
-
-    function circleRectCollision(circle, rect) {
-      const closestX = clamp(circle.x, rect.x, rect.x + rect.width);
-      const closestY = clamp(circle.y, rect.y, rect.y + rect.height);
-      const dx = circle.x - closestX;
-      const dy = circle.y - closestY;
-      return (dx * dx + dy * dy) < (circle.size * circle.size);
-    }
-
-    function endGame() {
+    function finishRace() {
       state.running = false;
-      state.best = Math.max(state.best, state.score);
-      localStorage.setItem('neon-racer-best', String(Math.floor(state.best)));
+      state.finished = true;
+
+      const lastLap = state.elapsed;
+      if (state.bestLap === null || lastLap < state.bestLap) {
+        state.bestLap = lastLap;
+      }
 
       overlay.classList.add('visible');
-      overlay.querySelector('h1').textContent = 'Crash!';
-      overlay.querySelector('p').textContent = 'You scored ' + Math.floor(state.score) + ' points. Press Start to race again.';
-      startBtn.textContent = 'Restart Race';
+      overlay.querySelector('h1').textContent = 'Race Complete!';
+      overlay.querySelector('p').textContent = `Finished in ${formatTime(state.elapsed)}. Press Start to race again.`;
+      startBtn.textContent = 'Race Again';
       updateHud();
     }
 
-    function handleInput() {
-      if (keys.left) {
-        player.x -= player.speed * 1.3;
-        player.heading = -0.15;
+    function addParticles(x, y, color, count = 8) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 90,
+          vy: (Math.random() - 0.5) * 90,
+          r: 2 + Math.random() * 3,
+          color,
+          life: 0.7 + Math.random() * 0.5
+        });
       }
-      if (keys.right) {
-        player.x += player.speed * 1.3;
-        player.heading = 0.15;
-      }
-
-      if (!keys.left && !keys.right) {
-        player.heading *= 0.82;
-      }
-
-      const roadLeft = canvas.width / 2 - roadHalfAt(canvas.height - 60) - 24;
-      const roadRight = canvas.width / 2 + roadHalfAt(canvas.height - 60) + 24;
-      player.x = clamp(player.x, roadLeft + 20, roadRight - 20);
-      player.drift = player.heading * 26;
     }
 
     function update(dt) {
       if (!state.running) return;
 
-      state.distance += dt * 0.12;
-      state.score += dt * 0.9 + state.speed * 0.7;
-      state.speed = 1 + Math.min(4, state.distance / 1400);
-      state.roadScroll += dt * (10 + state.speed * 4.5);
-      state.roadCurve += dt * 0.75;
-      state.roadShift = Math.sin(state.roadCurve) * 38;
+      state.elapsed += dt;
 
-      state.spawnTimer -= dt;
-      state.pickupTimer -= dt;
-
-      if (state.spawnTimer <= 0) {
-        spawnCar();
-        state.spawnTimer = Math.max(0.8, 1.5 - state.speed * 0.18) * (0.75 + Math.random() * 0.8);
+      if (keys.left) player.targetX -= 260 * dt;
+      if (keys.right) player.targetX += 260 * dt;
+      if (keys.boost && state.nitro > 2) {
+        state.boostActive = true;
+        state.nitro -= 28 * dt;
+        state.speed += 170 * dt;
+      } else {
+        state.boostActive = false;
+        state.nitro = clamp(state.nitro + 14 * dt, 0, 100);
       }
 
-      if (state.pickupTimer <= 0) {
-        spawnPickup();
-        state.pickupTimer = Math.max(2.2, 4.7 - state.speed * 0.45);
+      const roadLeft = canvas.width / 2 - roadHalfAt(canvas.height - 80);
+      const roadRight = canvas.width / 2 + roadHalfAt(canvas.height - 80);
+      player.targetX = clamp(player.targetX, roadLeft + 28, roadRight - 28);
+      player.x = lerp(player.x, player.targetX, 0.18);
+      player.drift = (player.x - player.targetX) * 0.25;
+
+      const baseSpeed = 130;
+      const accel = 55;
+      const maxSpeed = state.boostActive ? 420 : 280;
+      state.speed = lerp(state.speed, baseSpeed + (state.boostActive ? 180 : 0), 0.04);
+      state.speed = clamp(state.speed + accel * dt, 0, maxSpeed);
+
+      state.totalDistance += state.speed * dt * 0.65;
+
+      if (state.totalDistance >= RACE_DISTANCE * state.lap) {
+        if (state.lap < LAPS) {
+          state.lap += 1;
+          state.totalDistance = 0;
+          state.speed = 150;
+          addParticles(canvas.width / 2, canvas.height / 2, '#7dd3fc', 18);
+        } else {
+          finishRace();
+          return;
+        }
       }
 
-      handleInput();
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        e.y += (state.speed * 0.75 + e.speed) * dt;
+        e.wobble += dt * 1.8;
+        e.x = lerp(e.x, worldToScreenX(e.lane + Math.sin(e.wobble) * 0.12, e.y), 0.08);
 
-      for (let i = cars.length - 1; i >= 0; i--) {
-        const c = cars[i];
-        c.y += (4 + state.speed * 2.6) * dt * 60;
-
-        if (c.y > canvas.height + 120) {
-          cars.splice(i, 1);
-          continue;
+        if (e.y > canvas.height + 120) {
+          enemies.splice(i, 1);
+          spawnEnemy();
         }
 
-        const carRect = {
-          x: c.x - c.width / 2,
-          y: c.y - c.height / 2,
-          width: c.width,
-          height: c.height
-        };
-
-        const playerRect = {
+        const r1 = {
           x: player.x - player.width / 2,
           y: player.y - player.height / 2,
           width: player.width,
           height: player.height
         };
 
-        if (rectsOverlap(playerRect, carRect)) {
-          endGame();
+        const r2 = {
+          x: e.x - e.width / 2,
+          y: e.y - e.height / 2,
+          width: e.width,
+          height: e.height
+        };
+
+        if (
+          r1.x < r2.x + r2.width &&
+          r1.x + r1.width > r2.x &&
+          r1.y < r2.y + r2.height &&
+          r1.y + r1.height > r2.y
+        ) {
+          state.running = false;
+          overlay.classList.add('visible');
+          overlay.querySelector('h1').textContent = 'Crash!';
+          overlay.querySelector('p').textContent = `You reached ${formatTime(state.elapsed)}. Press Start to try again.`;
+          startBtn.textContent = 'Retry';
+          addParticles(player.x, player.y, '#f87171', 28);
           return;
         }
       }
 
       for (let i = pickups.length - 1; i >= 0; i--) {
         const p = pickups[i];
-        p.y += (4 + state.speed * 2.2) * dt * 60;
-        p.spin += dt * 6;
+        p.y += (state.speed * 0.9 + 120) * dt;
+        p.spin += dt * 8;
 
-        const pickupCircle = {
-          x: p.x,
-          y: p.y,
-          size: p.size
+        const pickupRect = {
+          x: p.x - p.size,
+          y: p.y - p.size,
+          width: p.size * 2,
+          height: p.size * 2
         };
 
         const playerRect = {
@@ -365,213 +457,170 @@
           height: player.height
         };
 
-        if (circleRectCollision(pickupCircle, playerRect)) {
-          state.score += 25;
+        if (
+          pickupRect.x < playerRect.x + playerRect.width &&
+          pickupRect.x + pickupRect.width > playerRect.x &&
+          pickupRect.y < playerRect.y + playerRect.height &&
+          pickupRect.y + pickupRect.height > playerRect.y
+        ) {
+          state.nitro = clamp(state.nitro + 30, 0, 100);
           pickups.splice(i, 1);
+          addParticles(p.x, p.y, '#facc15', 14);
           continue;
         }
 
         if (p.y > canvas.height + 40) {
           pickups.splice(i, 1);
+          spawnPickup();
         }
+      }
+
+      if (Math.random() < 0.02) spawnPickup();
+      if (Math.random() < 0.03) spawnEnemy();
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
       }
 
       updateHud();
     }
 
     function drawBackground() {
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      skyGrad.addColorStop(0, '#07111d');
-      skyGrad.addColorStop(0.35, '#11263d');
-      skyGrad.addColorStop(0.74, '#1f2a36');
-      skyGrad.addColorStop(1, '#1e293b');
-      ctx.fillStyle = skyGrad;
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      sky.addColorStop(0, '#020b18');
+      sky.addColorStop(0.5, '#111827');
+      sky.addColorStop(1, '#1f2937');
+      ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
-      for (let i = 0; i < 18; i++) {
-        const x = (i * 73 + (state.roadScroll * 0.4)) % (canvas.width + 100) - 50;
-        const h = 22 + (i % 6) * 18;
-        ctx.fillRect(x, 120 + (i % 4) * 20, 28, h);
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+      for (let i = 0; i < 28; i++) {
+        const x = (i * 71 + (state.elapsed * 30) % 80) % (canvas.width + 100) - 50;
+        const h = 18 + (i % 4) * 20;
+        ctx.fillRect(x, 90 + (i % 7) * 18, 28, h);
       }
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-      for (let i = 0; i < 20; i++) {
-        const x = (i * 90 + (state.roadScroll * 0.2)) % (canvas.width + 80) - 40;
-        const w = 38 + (i % 3) * 18;
-        const h = 60 + (i % 4) * 20;
-        ctx.fillRect(x, 135 + (i % 3) * 25, w, h);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+      for (let i = 0; i < 15; i++) {
+        const x = (i * 90 + (state.elapsed * 20) % 90) % (canvas.width + 120) - 60;
+        const w = 32 + (i % 3) * 16;
+        const h = 50 + (i % 5) * 18;
+        ctx.fillRect(x, 140 + (i % 3) * 30, w, h);
       }
-
-      ctx.beginPath();
-      ctx.fillStyle = '#1f2937';
-      ctx.moveTo(0, 220);
-      ctx.lineTo(canvas.width * 0.2, 120);
-      ctx.lineTo(canvas.width * 0.8, 120);
-      ctx.lineTo(canvas.width, 220);
-      ctx.lineTo(canvas.width, 260);
-      ctx.lineTo(0, 260);
-      ctx.closePath();
-      ctx.fill();
     }
 
     function drawRoad() {
-      const roadTop = 150;
-      const roadBottom = canvas.height;
-      const widthTop = 160;
-      const widthBottom = 560;
+      const topWidth = 170;
+      const bottomWidth = 560;
+      const top = road.horizon;
+      const bottom = canvas.height;
 
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2 - widthTop / 2 + state.roadShift * 0.3, roadTop);
-      ctx.lineTo(canvas.width / 2 + widthTop / 2 + state.roadShift * 0.3, roadTop);
-      ctx.lineTo(canvas.width / 2 + widthBottom / 2 + state.roadShift, roadBottom);
-      ctx.lineTo(canvas.width / 2 - widthBottom / 2 + state.roadShift, roadBottom);
+      ctx.moveTo(canvas.width / 2 - topWidth / 2, top);
+      ctx.lineTo(canvas.width / 2 + topWidth / 2, top);
+      ctx.lineTo(canvas.width / 2 + bottomWidth / 2, bottom);
+      ctx.lineTo(canvas.width / 2 - bottomWidth / 2, bottom);
       ctx.closePath();
 
-      const roadGrad = ctx.createLinearGradient(0, roadTop, 0, roadBottom);
+      const roadGrad = ctx.createLinearGradient(0, top, 0, bottom);
       roadGrad.addColorStop(0, '#3f3f46');
       roadGrad.addColorStop(0.4, '#1f2937');
       roadGrad.addColorStop(1, '#111827');
       ctx.fillStyle = roadGrad;
       ctx.fill();
 
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
       ctx.lineWidth = 18;
       ctx.stroke();
 
-      const laneCount = 3;
-      const leftEdgeX1 = canvas.width / 2 - widthTop / 2 + state.roadShift * 0.3;
-      const leftEdgeX2 = canvas.width / 2 - widthBottom / 2 + state.roadShift;
-      const rightEdgeX1 = canvas.width / 2 + widthTop / 2 + state.roadShift * 0.3;
-      const rightEdgeX2 = canvas.width / 2 + widthBottom / 2 + state.roadShift;
-
-      for (let i = 1; i < laneCount; i++) {
-        const t = i / laneCount;
-        const x1 = leftEdgeX1 + (rightEdgeX1 - leftEdgeX1) * t;
-        const x2 = leftEdgeX2 + (rightEdgeX2 - leftEdgeX2) * t;
+      for (let i = 1; i < 3; i++) {
+        const t1 = i / 3;
+        const x1 = canvas.width / 2 - topWidth / 2 + (topWidth * t1);
+        const x2 = canvas.width / 2 - bottomWidth / 2 + (bottomWidth * t1);
 
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
         ctx.lineWidth = 3;
-        ctx.setLineDash([18, 26]);
-        for (let y = roadTop; y < roadBottom; y += 26) {
-          const yy = y + (state.roadScroll * 1.4) % 26;
-          const x = x1 + (x2 - x1) * ((yy - roadTop) / (roadBottom - roadTop));
-          if (yy - roadTop < 0) continue;
-          ctx.moveTo(x, yy);
-          ctx.lineTo(x, yy + 16);
+        ctx.setLineDash([20, 24]);
+        for (let y = top; y < bottom; y += 26) {
+          const p = (y - top) / (bottom - top);
+          const x = lerp(x1, x2, p);
+          const nextY = y + 16;
+          const p2 = (nextY - top) / (bottom - top);
+          const nx = lerp(x1, x2, p2);
+          ctx.moveTo(x, y);
+          ctx.lineTo(nx, nextY);
         }
         ctx.stroke();
       }
       ctx.setLineDash([]);
 
-      for (let i = 0; i < 10; i++) {
-        const y = i * 58 + (state.roadScroll * 1.7 % 58);
-        ctx.fillStyle = '#f8fafc';
-        const xA = leftEdgeX1 + (leftEdgeX2 - leftEdgeX1) * ((y - roadTop) / (roadBottom - roadTop));
-        const xB = rightEdgeX1 + (rightEdgeX2 - rightEdgeX1) * ((y - roadTop) / (roadBottom - roadTop));
-        const width = 8;
-        ctx.fillRect(xA - width / 2, y, width, 26);
-        ctx.fillRect(xB - width / 2, y, width, 26);
+      ctx.fillStyle = 'rgba(250, 204, 21, 0.6)';
+      for (let i = 0; i < 20; i++) {
+        const y = 155 + i * 26 + ((state.elapsed * 90) % 26);
+        ctx.fillRect(canvas.width / 2 - 270 + Math.sin(y * 0.15) * 24, y, 5, 12);
+        ctx.fillRect(canvas.width / 2 + 270 + Math.sin(y * 0.17) * 28, y, 5, 12);
       }
     }
 
-    function drawPlayer() {
-      const x = player.x;
-      const y = player.y;
-
+    function drawCar(x, y, width, height, color, heading = 0, shadow = true) {
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(player.heading);
+      ctx.rotate(heading);
+      if (shadow) {
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.25)';
+        ctx.fillRect(-width / 2 - 6, height / 2 - 10, width + 12, 16);
+      }
 
-      ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.fillRect(-26, 18, 52, 74);
-
-      ctx.fillStyle = player.color;
-      ctx.fillRect(-28, -32, 56, 72);
-      ctx.fillStyle = 'rgba(241, 245, 249, 0.7)';
-      ctx.fillRect(-16, -18, 32, 18);
+      ctx.fillStyle = color;
+      ctx.fillRect(-width / 2, -height / 2, width, height);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(-width / 2 + 9, -height / 2 + 10, width - 18, 18);
 
       ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(-18, -40, 8, 10);
-      ctx.fillRect(10, -40, 8, 10);
+      ctx.fillRect(-width / 2 + 8, -height / 2 - 8, 10, 10);
+      ctx.fillRect(width / 2 - 18, -height / 2 - 8, 10, 10);
 
       ctx.fillStyle = '#fb7185';
-      ctx.fillRect(-18, 38, 8, 10);
-      ctx.fillRect(10, 38, 8, 10);
-
+      ctx.fillRect(-width / 2 + 8, height / 2 - 8, 10, 8);
+      ctx.fillRect(width / 2 - 18, height / 2 - 8, 10, 8);
       ctx.restore();
     }
 
-    function drawCars() {
-      cars.forEach(car => {
-        const x = car.x;
-        const y = car.y;
-
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.fillRect(-22, 12, 44, 76);
-
-        ctx.fillStyle = car.color;
-        ctx.fillRect(-26, -32, 52, 76);
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.fillRect(-16, -18, 32, 18);
-
-        ctx.fillStyle = '#fef3c7';
-        ctx.fillRect(-16, -38, 8, 10);
-        ctx.fillRect(8, -38, 8, 10);
-
-        ctx.fillStyle = '#fb7185';
-        ctx.fillRect(-16, 38, 8, 10);
-        ctx.fillRect(8, 38, 8, 10);
-        ctx.restore();
-      });
+    function drawPickup(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.spin);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.fillStyle = '#fff7b2';
+      ctx.fillRect(-p.size / 4, -p.size / 4, p.size / 2, p.size / 2);
+      ctx.restore();
     }
 
-    function drawPickups() {
-      pickups.forEach(p => {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.spin);
+    function drawParticles() {
+      for (const p of particles) {
         ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.fillStyle = '#fff7b2';
-        ctx.fillRect(-p.size / 4, -p.size / 4, p.size / 2, p.size / 2);
-        ctx.restore();
-      });
-    }
-
-    function drawRoadsideLights() {
-      for (let i = 0; i < 20; i++) {
-        const t = i / 20;
-        const y = 160 + t * (canvas.height - 160);
-        const xLeft = canvas.width / 2 - 270 + Math.sin((y + state.roadScroll) * 0.08) * 18;
-        const xRight = canvas.width / 2 + 270 + Math.sin((y + state.roadScroll * 1.2) * 0.06) * 18;
-
-        ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
-        ctx.fillRect(xLeft, y, 5, 10);
-        ctx.fillRect(xRight, y, 5, 10);
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillRect(p.x, p.y, p.r, p.r);
       }
-    }
-
-    function drawStartHint() {
-      if (!state.running) return;
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.font = 'bold 17px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Swerve through the traffic and grab power-ups', canvas.width / 2, 40);
+      ctx.globalAlpha = 1;
     }
 
     function render() {
       drawBackground();
       drawRoad();
-      drawRoadsideLights();
-      drawPickups();
-      drawCars();
-      drawPlayer();
-      drawStartHint();
+
+      for (const p of pickups) drawPickup(p);
+      for (const e of enemies) drawCar(e.x, e.y, e.width, e.height, e.color, 0, true);
+
+      const heading = (player.x - player.targetX) * 0.06;
+      drawCar(player.x, player.y, player.width, player.height, player.color, heading, true);
+      drawParticles();
     }
 
     let lastTime = 0;
@@ -585,14 +634,18 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = true;
-      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = true;
+      const key = e.key.toLowerCase();
+      if (key === 'a' || e.key === 'ArrowLeft') keys.left = true;
+      if (key === 'd' || e.key === 'ArrowRight') keys.right = true;
+      if (key === 'shift') keys.boost = true;
       if ((e.key === ' ' || e.key === 'Enter') && !state.running) resetGame();
     });
 
     document.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = false;
-      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = false;
+      const key = e.key.toLowerCase();
+      if (key === 'a' || e.key === 'ArrowLeft') keys.left = false;
+      if (key === 'd' || e.key === 'ArrowRight') keys.right = false;
+      if (key === 'shift') keys.boost = false;
     });
 
     startBtn.addEventListener('click', () => {
